@@ -1,0 +1,50 @@
+{
+	"name": "venne/forms",
+	"description": "Venne forms component",
+	"keywords": ["nette", "venne", "forms"],
+	"homepage": "http://venne.cz",
+	"license": ["BSD-3-Clause", "GPL-2.0", "GPL-3.0"],
+	"authors": [
+		{
+			"name": "Josef Kříž",
+			"homepage": "http://josef-kriz.cz"
+		}
+	],
+	"support": {
+		"email": "info@venne.cz",
+		"issues": "https://github.com/Venne/Forms/issues"
+	},
+	"require": {
+		"php": ">=5.4.0",
+		"nette/nette": "~2.1.0"
+	},
+	"require-dev": {
+		"nette/tester": "~1.1.0"
+	},
+	"suggest": {
+		"kdyby/doctrine-forms": ""
+	},
+	"autoload": {
+		"psr-4": {
+			"Venne\\Bridges\\": "src/Bridges/",
+			"Venne\\Forms\\": "src/Forms/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"VenneTests\\": "tests/src/"
+		}
+	},
+	"extra": {
+		"branch-alias": {
+			"dev-master": "3.0-dev"
+		},
+		"venne": {
+			"configuration": {
+				"extensions": {
+					"forms": "Venne\\Forms\\DI\\FormsExtension"
+				}
+			}
+		}
+	}
+}
