@@ -167,6 +167,90 @@ class DoctrineFormFactoryBuilderTest extends TestCase
 
 	}
 
+
+	public function testBuildFactoryFlushError()
+	{
+		$entity = new FooEntity;
+
+		$this->entityFormMapper->em = $em = new EntityManagerErrorOnFlush;
+		$factoryBuilder = new FormFactoryBuilder($this->entityFormMapper);
+		$form = $factoryBuilder
+			->createNew(new FormFactory(function () {
+				return new MyForm;
+			}))
+			->setEntity($entity)
+			->buildFactory()
+			->create();
+
+		$form->s = $form['_submit'];
+
+		Assert::null($em->rollback);
+		Assert::same(0, count($form->getErrors()));
+
+		$form['_eventControl']->onAttached();
+		$form->onValidate($form);
+
+		Assert::true($em->rollback);
+		Assert::same(1, count($form->getErrors()));
+	}
+
+
+	public function testBuildFactoryCommitError()
+	{
+		$entity = new FooEntity;
+
+		$this->entityFormMapper->em = $em = new EntityManagerErrorOnCommit;
+		$factoryBuilder = new FormFactoryBuilder($this->entityFormMapper);
+		$form = $factoryBuilder
+			->createNew(new FormFactory(function () {
+				return new MyForm;
+			}))
+			->setEntity($entity)
+			->buildFactory()
+			->create();
+
+		$form->s = $form['_submit'];
+
+		$form['_eventControl']->onAttached();
+		$form->onValidate($form);
+
+		Assert::null($em->rollback);
+		Assert::same(0, count($form->getErrors()));
+
+		$form->onSuccess($form);
+
+		Assert::true($em->rollback);
+		Assert::same(1, count($form->getErrors()));
+	}
+
+
+	public function testSetSaveEntity()
+	{
+		foreach (array(TRUE, FALSE) as $val) {
+			$test = FALSE;
+			$entity = new FooEntity;
+
+			$this->entityFormMapper->em = $em = new EntityManagerErrorOnCommit;
+			$factoryBuilder = new FormFactoryBuilder($this->entityFormMapper);
+			$form = $factoryBuilder
+				->createNew(new FormFactory(function () {
+					return new MyForm;
+				}))
+				->setEntity($entity)
+				->setSaveEntity(function () use (&$test, $val) {
+					$test = TRUE;
+					return $val;
+				})
+				->buildFactory()
+				->create();
+
+			$form['_eventControl']->onAttached();
+			$form->onValidate($form);
+
+			Assert::same($val ? : NULL, $em->begin);
+		}
+	}
+
 }
 
 class MyForm extends Form
@@ -192,6 +276,26 @@ class FooEntity extends BaseEntity
 {
 
 	public $text;
+
+}
+
+class EntityManagerErrorOnCommit extends EntityManager
+{
+
+	public function commit()
+	{
+		throw new \Exception;
+	}
+
+}
+
+class EntityManagerErrorOnFlush extends EntityManager
+{
+
+	public function flush()
+	{
+		throw new \Exception;
+	}
 
 }
 
