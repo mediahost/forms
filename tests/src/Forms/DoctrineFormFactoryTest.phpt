@@ -16,15 +16,14 @@ use Kdyby\DoctrineForms\EntityFormMapper;
 use Nette\Application\UI\Form;
 use Tester\Assert;
 use Tester\TestCase;
-use Venne\Bridges\Kdyby\DoctrineForms\FormFactoryBuilder;
-use Venne\Forms\FormFactory;
+use Venne\Bridges\Kdyby\DoctrineForms\FormFactory;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @author Josef Kříž <pepakriz@gmail.com>
  */
-class DoctrineFormFactoryBuilderTest extends TestCase
+class DoctrineFormFactoryTest extends TestCase
 {
 
 	/** @var EntityFormMapper */
@@ -41,11 +40,8 @@ class DoctrineFormFactoryBuilderTest extends TestCase
 	{
 		$entity = new FooEntity;
 
-		$factoryBuilder = new FormFactoryBuilder($this->entityFormMapper);
-		$form = $factoryBuilder
-			->createNew(new FormFactory)
+		$form = (new FormFactory($this->entityFormMapper))
 			->setEntity($entity)
-			->buildFactory()
 			->create();
 
 		Assert::null($this->entityFormMapper->load);
@@ -67,15 +63,12 @@ class DoctrineFormFactoryBuilderTest extends TestCase
 	public function testBuildFactorySaveSuccess()
 	{
 		$entity = new FooEntity;
-
 		$this->entityFormMapper->em = $em = new EntityManager;
-		$factoryBuilder = new FormFactoryBuilder($this->entityFormMapper);
-		$form = $factoryBuilder
-			->createNew(new FormFactory(function () {
-				return new MyForm;
-			}))
+
+		$form = (new FormFactory($this->entityFormMapper, new \Venne\Forms\FormFactory(function () {
+			return new MyForm;
+		})))
 			->setEntity($entity)
-			->buildFactory()
 			->create();
 
 		$form->s = $form['_submit'];
@@ -119,15 +112,12 @@ class DoctrineFormFactoryBuilderTest extends TestCase
 	public function testBuildFactorySaveError()
 	{
 		$entity = new FooEntity;
-
 		$this->entityFormMapper->em = $em = new EntityManager;
-		$factoryBuilder = new FormFactoryBuilder($this->entityFormMapper);
-		$form = $factoryBuilder
-			->createNew(new FormFactory(function () {
-				return new MyForm;
-			}))
+
+		$form = (new FormFactory($this->entityFormMapper, new \Venne\Forms\FormFactory(function () {
+			return new MyForm;
+		})))
 			->setEntity($entity)
-			->buildFactory()
 			->create();
 
 		$form->s = $form['_submit'];
@@ -171,15 +161,12 @@ class DoctrineFormFactoryBuilderTest extends TestCase
 	public function testBuildFactoryFlushError()
 	{
 		$entity = new FooEntity;
-
 		$this->entityFormMapper->em = $em = new EntityManagerErrorOnFlush;
-		$factoryBuilder = new FormFactoryBuilder($this->entityFormMapper);
-		$form = $factoryBuilder
-			->createNew(new FormFactory(function () {
-				return new MyForm;
-			}))
+
+		$form = (new FormFactory($this->entityFormMapper, new \Venne\Forms\FormFactory(function () {
+			return new MyForm;
+		})))
 			->setEntity($entity)
-			->buildFactory()
 			->create();
 
 		$form->s = $form['_submit'];
@@ -198,15 +185,12 @@ class DoctrineFormFactoryBuilderTest extends TestCase
 	public function testBuildFactoryCommitError()
 	{
 		$entity = new FooEntity;
-
 		$this->entityFormMapper->em = $em = new EntityManagerErrorOnCommit;
-		$factoryBuilder = new FormFactoryBuilder($this->entityFormMapper);
-		$form = $factoryBuilder
-			->createNew(new FormFactory(function () {
-				return new MyForm;
-			}))
+
+		$form = (new FormFactory($this->entityFormMapper, new \Venne\Forms\FormFactory(function () {
+			return new MyForm;
+		})))
 			->setEntity($entity)
-			->buildFactory()
 			->create();
 
 		$form->s = $form['_submit'];
@@ -226,22 +210,25 @@ class DoctrineFormFactoryBuilderTest extends TestCase
 
 	public function testSetSaveEntity()
 	{
+		$formFactory = new FormFactory($this->entityFormMapper);
+
+		Assert::exception(function () use ($formFactory) {
+			$formFactory->setSaveEntity('aaa');
+		}, 'Nette\InvalidArgumentException', 'Argument must be callable.');
+
 		foreach (array(TRUE, FALSE) as $val) {
 			$test = FALSE;
 			$entity = new FooEntity;
-
 			$this->entityFormMapper->em = $em = new EntityManagerErrorOnCommit;
-			$factoryBuilder = new FormFactoryBuilder($this->entityFormMapper);
-			$form = $factoryBuilder
-				->createNew(new FormFactory(function () {
-					return new MyForm;
-				}))
+
+			$form = (new FormFactory($this->entityFormMapper, new \Venne\Forms\FormFactory(function () {
+				return new MyForm;
+			})))
 				->setEntity($entity)
 				->setSaveEntity(function () use (&$test, $val) {
 					$test = TRUE;
 					return $val;
 				})
-				->buildFactory()
 				->create();
 
 			$form['_eventControl']->onAttached();
@@ -344,7 +331,7 @@ class EntityManager
 
 }
 
-$testCache = new DoctrineFormFactoryBuilderTest;
+$testCache = new DoctrineFormFactoryTest;
 $testCache->run();
 
 namespace Kdyby\DoctrineForms;

@@ -14,19 +14,13 @@ namespace Venne\Forms;
 /**
  * @author Josef Kříž <pepakriz@gmail.com>
  */
-interface IFormFactoryBuilder
+interface IFormFactoryFactory
 {
 
 	/**
 	 * @param IFormFactory $formFactory
-	 * @return mixed
-	 */
-	public function createNew(IFormFactory $formFactory);
-
-
-	/**
 	 * @return IFormFactory
 	 */
-	public function buildFactory();
+	public function create(IFormFactory $formFactory = NULL);
 
 }

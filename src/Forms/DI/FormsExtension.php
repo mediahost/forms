@@ -24,8 +24,8 @@ class FormsExtension extends CompilerExtension
 		$container = $this->getContainerBuilder();
 
 		if (count($this->compiler->getExtensions('Kdyby\DoctrineForms\DI\FormsExtension'))) {
-			$container->addDefinition($this->prefix('doctrineFormFactoryBuilder'))
-				->setClass('Venne\Bridges\Kdyby\DoctrineForms\FormFactoryBuilder');
+			$container->addDefinition($this->prefix('doctrineFormFactoryFactory'))
+				->setClass('Venne\Bridges\Kdyby\DoctrineForms\FormFactoryFactory');
 		}
 	}
 
