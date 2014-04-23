@@ -121,7 +121,7 @@ class ExamplePresenter extends Nette\Application\UI\Presenter
 {
 
 	private $fooFormFactory;
-    private $formFactoryFactory;
+	private $formFactoryFactory;
 
 	public function __construct(FooFormFactory $fooFormFactory, FormFactoryFactory $formFactoryFactory)
 	{
