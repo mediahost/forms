@@ -43,4 +43,13 @@ class FormFactoryFactory implements IFormFactoryFactory
 		return new FormFactory($this->entityMapper, $formFactory);
 	}
 
+
+	/**
+	 * @return EntityFormMapper
+	 */
+	public function getEntityMapper()
+	{
+		return $this->entityMapper;
+	}
+
 }
